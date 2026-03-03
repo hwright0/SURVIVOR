@@ -121,10 +121,14 @@ void official_interface(int argc, char *argv[]) {
 			}
 			exit(0);
 		} else if (strcmp(argv[1], "merge") == 0) {
-			if (argc == 10) {
+			if (argc == 10 || argc == 11) {
 				//merge 3 SV calls from the same strain
 				//	combine_calls_new(std::string(argv[2]), atoi(argv[3]), atoi(argv[4]), std::string(argv[5]));
-				combine_calls_svs(std::string(argv[2]), atof(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), std::string(argv[9]));
+				bool print_supp_vec = false;
+				if (argc == 11) {
+					print_supp_vec = (atoi(argv[10]) == 1);
+				}
+				combine_calls_svs(std::string(argv[2]), atof(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), std::string(argv[9]), print_supp_vec);
 			} else {
 				std::cerr << "File with VCF names and paths" << std::endl;
 				std::cerr << "max distance between breakpoints (0-1 percent of length, 1- number of bp) " << std::endl;
@@ -134,6 +138,7 @@ void official_interface(int argc, char *argv[]) {
 				std::cerr << "Disabled." << std::endl;
 				std::cerr << "Minimum size of SVs to be taken into account." << std::endl;
 				std::cerr << "Output VCF filename" << std::endl;
+				std::cerr << "Optional: Print SUPP_VEC in INFO field (1==yes, else no; default: no)" << std::endl;
 			}
 			exit(0);
 		} else if (strcmp(argv[1], "filter") == 0) {
@@ -295,6 +300,7 @@ void official_interface(int argc, char *argv[]) {
 	}
 	std::cerr << "Program: SURVIVOR (Tools for Structural Variations in the VCF format)" << std::endl;
 	std::cerr << "Version: " << Parameter::Instance()->version << std::endl;
+	std::cerr << "Note: running modified SURVIVOR build." << std::endl;
 	std::cerr << std::endl;
 	std::cerr << "Usage: SURVIVOR <command> [options]" << std::endl;
 	std::cerr << std::endl;

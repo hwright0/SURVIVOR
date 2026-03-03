@@ -7,6 +7,8 @@
 
 #include "combine_svs.h"
 
+static bool g_print_supp_vec = false;
+
 bool is_valid_id(std::string id) {
 	if (id.empty()) {
 		return false;
@@ -119,7 +121,9 @@ void print_header(FILE *& file, std::vector<std::string> names, std::map<std::st
 	fprintf(file, "%s", "##INFO=<ID=SVLEN,Number=1,Type=Integer,Description=\"Length of the SV\">\n");
 	fprintf(file, "%s", "##INFO=<ID=SVMETHOD,Number=1,Type=String,Description=\"Method for generating this merged VCF file.\">\n");
 	fprintf(file, "%s", "##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of the SV.\">\n");
-	fprintf(file, "%s", "##INFO=<ID=SUPP_VEC,Number=1,Type=String,Description=\"Vector of supporting samples.\">\n");
+	if (g_print_supp_vec) {
+		fprintf(file, "%s", "##INFO=<ID=SUPP_VEC,Number=1,Type=String,Description=\"Vector of supporting samples.\">\n");
+	}
 	fprintf(file, "%s", "##INFO=<ID=SUPP,Number=1,Type=String,Description=\"Number of samples supporting the variant\">\n");
 	fprintf(file, "%s", "##INFO=<ID=STRANDS,Number=1,Type=String,Description=\"Indicating the direction of the reads with respect to the type and breakpoint.\">\n");
 
@@ -392,8 +396,10 @@ void print_entry_overlap_BND(FILE *& file, SVS_Node * entry, int id) {
 		convert << "PASS\t";
 		convert << "SUPP=";
 		convert << get_support(entry->caller_info);
-		convert << ";SUPP_VEC=";
-		convert << get_support_vec(entry->caller_info); //todo make aware of prev_supp/ supp vec
+		if (g_print_supp_vec) {
+			convert << ";SUPP_VEC=";
+			convert << get_support_vec(entry->caller_info); //todo make aware of prev_supp/ supp vec
+		}
 		convert << ";SVLEN=";
 		if (entry->type != 3) {
 			convert << get_avglen(entry->caller_info);
@@ -520,8 +526,10 @@ void print_entry_overlap(FILE *& file, SVS_Node * entry, int id) {
 	//INFO FIELD
 	convert << "SUPP=";
 	convert << get_support(entry->caller_info);
-	convert << ";SUPP_VEC=";
-	convert << get_support_vec(entry->caller_info); //todo make aware of prev_supp/ supp vec
+	if (g_print_supp_vec) {
+		convert << ";SUPP_VEC=";
+		convert << get_support_vec(entry->caller_info); //todo make aware of prev_supp/ supp vec
+	}
 	convert << ";SVLEN=";
 	if (entry->type == 0) {
 		convert<< (int)entry->caller_info[index]->len *-1;
@@ -652,7 +660,9 @@ void parse_vcf_header(std::map<std::string, int> &chrs, std::string filename) {
 	}
 }
 
-void combine_calls_svs(std::string files, double max_dist, int min_support, int type_save, int strand_save, int dynamic_size, int min_svs, std::string output) {
+void combine_calls_svs(std::string files, double max_dist, int min_support, int type_save, int strand_save, int dynamic_size, int min_svs, std::string output, bool print_supp_vec) {
+	g_print_supp_vec = print_supp_vec;
+	std::cerr << "[SURVIVOR-modified] merge support-vector output is " << (g_print_supp_vec ? "enabled" : "disabled") << "." << std::endl;
 	std::vector<std::string> names = parse_filename(files);
 
 	Parameter::Instance()->max_caller = names.size();
