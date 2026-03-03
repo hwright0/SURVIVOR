@@ -40,6 +40,10 @@ struct strvcfentry{
 	std::pair<int,int> cpos;
 	std::pair<int,int> cend;
 	int supp;
+	double sm;                  // Linear copy ratio of the segment mean
+	int cn;                     // Estimated copy number
+	int bc;                     // Number of bins in the region
+	std::pair<int,int> pe;      // Number of improperly paired end reads
 	//int num_reads;
 };
 

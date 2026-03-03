@@ -386,6 +386,92 @@ std::pair<int, int> parse_DR(char *buffer) {
 
 }
 
+struct format_extras_str {
+	double sm;
+	int cn;
+	int bc;
+	std::pair<int,int> pe;
+};
+
+format_extras_str parse_format_extras(char *buffer) {
+	format_extras_str res;
+	res.sm = -1.0;
+	res.cn = -1;
+	res.bc = -1;
+	res.pe.first = -1;
+	res.pe.second = -1;
+
+	int count_SM = -1;
+	int count_CN = -1;
+	int count_BC = -1;
+	int count_PE = -1;
+	size_t i = 0;
+	int count = 0;
+
+	while (buffer[i] != '\t' && (buffer[i] != '\n' && buffer[i] != '\0')) {
+		if (count_SM == -1 && (strncmp(":SM", &buffer[i], 3) == 0 || strncmp("SM:", &buffer[i], 3) == 0)) {
+			count_SM = count;
+			if (buffer[i] == ':') {
+				count_SM++;
+			}
+		}
+		if (count_CN == -1 && (strncmp(":CN", &buffer[i], 3) == 0 || strncmp("CN:", &buffer[i], 3) == 0)) {
+			count_CN = count;
+			if (buffer[i] == ':') {
+				count_CN++;
+			}
+		}
+		if (count_BC == -1 && (strncmp(":BC", &buffer[i], 3) == 0 || strncmp("BC:", &buffer[i], 3) == 0)) {
+			count_BC = count;
+			if (buffer[i] == ':') {
+				count_BC++;
+			}
+		}
+		if (count_PE == -1 && (strncmp(":PE", &buffer[i], 3) == 0 || strncmp("PE:", &buffer[i], 3) == 0)) {
+			count_PE = count;
+			if (buffer[i] == ':') {
+				count_PE++;
+			}
+		}
+		if (buffer[i] == ':') {
+			count++;
+		}
+		i++;
+	}
+
+	count = 0;
+	while (buffer[i] != '\n' && buffer[i] != '\0') {
+		if (count_SM != -1 && count_SM == count) {
+			res.sm = atof(&buffer[i]);
+			count_SM = -1;
+		}
+		if (count_CN != -1 && count_CN == count) {
+			res.cn = atoi(&buffer[i]);
+			count_CN = -1;
+		}
+		if (count_BC != -1 && count_BC == count) {
+			res.bc = atoi(&buffer[i]);
+			count_BC = -1;
+		}
+		if (count_PE != -1 && count_PE == count) {
+			res.pe.first = atoi(&buffer[i]);
+			size_t j = i;
+			while (buffer[j] != ',' && buffer[j] != ':' && buffer[j] != '\t' && buffer[j] != '\n' && buffer[j] != '\0') {
+				j++;
+			}
+			if (buffer[j] == ',') {
+				res.pe.second = atoi(&buffer[j + 1]);
+			}
+			count_PE = -1;
+		}
+		if (buffer[i] == ':') {
+			count++;
+		}
+		i++;
+	}
+	return res;
+}
+
 std::string get_most_effect(std::string alt, int ref) {
 	size_t i = 0;
 	std::string most_alt = "";
@@ -458,6 +544,11 @@ strvcfentry parse_vcf_entry(std::string buffer) {
 		tmp.num_reads.second = -1;
 		tmp.sv_len = -1;
 		tmp.af = -1;
+		tmp.sm = -1.0;
+		tmp.cn = -1;
+		tmp.bc = -1;
+		tmp.pe.first = -1;
+		tmp.pe.second = -1;
 //		float freq = 0;
 		//std::cout<<buffer<<std::endl;
 		for (size_t i = 0; i < buffer.size() && buffer[i] != '\0' && buffer[i] != '\n'; i++) {
@@ -706,6 +797,11 @@ std::vector<strvcfentry> parse_vcf(std::string & filename, int min_svs) {
 			tmp.cend.second = -1;
 			tmp.cpos.first = -1;
 			tmp.cpos.second = -1;
+			tmp.sm = -1.0;
+			tmp.cn = -1;
+			tmp.bc = -1;
+			tmp.pe.first = -1;
+			tmp.pe.second = -1;
 			//float freq = 0;
 			//std::cout<<buffer<<std::endl;
 			for (size_t i = 0; i < buffer.size() && buffer[i] != '\0' && buffer[i] != '\n'; i++) {
@@ -840,6 +936,11 @@ std::vector<strvcfentry> parse_vcf(std::string & filename, int min_svs) {
 				}
 				if (count == 8 && buffer[i - 1] == '\t') {
 					tmp.num_reads = parse_DR(&buffer[i]);
+					format_extras_str extras = parse_format_extras(&buffer[i]);
+					tmp.sm = extras.sm;
+					tmp.cn = extras.cn;
+					tmp.bc = extras.bc;
+					tmp.pe = extras.pe;
 				}
 				/*
 				 if (count == 8 && strncmp(&buffer[i], "PR:SR", 5) == 0) {

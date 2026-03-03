@@ -83,6 +83,10 @@ public:
 		tmp->pre_supp_vec = meta_info.pre_supp_vec;
 		tmp->alleles = meta_info.allleles;
 		tmp->vcf_ID = meta_info.vcf_ID;
+		tmp->sm = meta_info.sm;
+		tmp->cn = meta_info.cn;
+		tmp->bc = meta_info.bc;
+		tmp->pe = meta_info.pe;
 		data->caller_info.push_back(tmp);
 		height = 0;
 	}
@@ -144,6 +148,10 @@ public:
 		this->data->caller_info[index]->strand = strands;
 		this->data->caller_info[index]->pre_supp_vec = meta_info.pre_supp_vec;
 		this->data->caller_info[index]->quality.push_back(meta_info.QV);
+		this->data->caller_info[index]->sm = meta_info.sm;
+		this->data->caller_info[index]->cn = meta_info.cn;
+		this->data->caller_info[index]->bc = meta_info.bc;
+		this->data->caller_info[index]->pe = meta_info.pe;
 
 		if (meta_info.allleles.first.size() > this->data->caller_info[index]->alleles.first.size() || meta_info.allleles.second.size() > this->data->caller_info[index]->alleles.second.size()) {
 			this->data->caller_info[index]->alleles.first = meta_info.allleles.first;

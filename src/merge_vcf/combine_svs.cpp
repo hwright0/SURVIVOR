@@ -134,6 +134,10 @@ void print_header(FILE *& file, std::vector<std::string> names, std::map<std::st
 	fprintf(file, "%s", "##FORMAT=<ID=RAL,Number=1,Type=String,Description=\"Reference allele sequence reported from input.\">\n");
 	fprintf(file, "%s", "##FORMAT=<ID=AAL,Number=1,Type=String,Description=\"Alternative allele sequence reported from input.\">\n");
 	fprintf(file, "%s", "##FORMAT=<ID=CO,Number=1,Type=String,Description=\"Coordinates\">\n");
+	fprintf(file, "%s", "##FORMAT=<ID=SM,Number=1,Type=Float,Description=\"Linear copy ratio of the segment mean\">\n");
+	fprintf(file, "%s", "##FORMAT=<ID=CN,Number=1,Type=Integer,Description=\"Estimated copy number\">\n");
+	fprintf(file, "%s", "##FORMAT=<ID=BC,Number=1,Type=Integer,Description=\"Number of bins in the region\">\n");
+	fprintf(file, "%s", "##FORMAT=<ID=PE,Number=2,Type=Integer,Description=\"Number of improperly paired end reads at start and stop breakpoints\">\n");
 	fprintf(file, "%s", "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT");
 	for (size_t i = 0; i < names.size(); i++) {
 		fprintf(file, "%c", '\t');
@@ -207,7 +211,7 @@ std::string print_strands(std::pair<bool, bool> strands) {
 }
 
 void print_GTs(std::ostringstream & convert, SVS_Node * entry) {
-	convert << "\tGT:PSV:LN:DR:ST:QV:TY:ID:RAL:AAL:CO";
+	convert << "\tGT:PSV:LN:DR:ST:QV:TY:ID:RAL:AAL:CO:SM:CN:BC:PE";
 	int pos = 0;
 	//std::cout<<"Check: "<<Parameter::Instance()->max_caller <<" vs "<<entry->caller_info.size()<<std::endl;
 	for (size_t i = 0; i < Parameter::Instance()->max_caller; i++) {
@@ -304,10 +308,36 @@ void print_GTs(std::ostringstream & convert, SVS_Node * entry) {
 					convert << "1";
 				}
 			}
+			convert << ":";   //SM
+			if (entry->caller_info[pos]->sm >= 0) {
+				convert << entry->caller_info[pos]->sm;
+			} else {
+				convert << "NaN";
+			}
+			convert << ":";   //CN
+			if (entry->caller_info[pos]->cn >= 0) {
+				convert << entry->caller_info[pos]->cn;
+			} else {
+				convert << "NaN";
+			}
+			convert << ":";   //BC
+			if (entry->caller_info[pos]->bc >= 0) {
+				convert << entry->caller_info[pos]->bc;
+			} else {
+				convert << "NaN";
+			}
+			convert << ":";   //PE
+			if (entry->caller_info[pos]->pe.first >= 0) {
+				convert << entry->caller_info[pos]->pe.first;
+				convert << ",";
+				convert << entry->caller_info[pos]->pe.second;
+			} else {
+				convert << "NaN";
+			}
 			pos++;
 		} else { //check len!
-				 //GT:PSV:LN:DR:ST:QV:TY:ID:RAL:AAL:CO
-			convert << "./.:NaN:0:0,0:--:NaN:NaN:NaN:NAN:NAN:NAN";
+				 //GT:PSV:LN:DR:ST:QV:TY:ID:RAL:AAL:CO:SM:CN:BC:PE
+			convert << "./.:NaN:0:0,0:--:NaN:NaN:NaN:NAN:NAN:NAN:NaN:NaN:NaN:NaN";
 		}
 
 	}
@@ -657,6 +687,10 @@ void combine_calls_svs(std::string files, double max_dist, int min_support, int 
 			tmp.pre_supp_vec = entries[j].prev_support_vec;
 			tmp.vcf_ID = entries[j].sv_id;
 			tmp.allleles = entries[j].alleles;
+			tmp.sm = entries[j].sm;
+			tmp.cn = entries[j].cn;
+			tmp.bc = entries[j].bc;
+			tmp.pe = entries[j].pe;
 
 			if(start.position==151164){
 				std::cout<<"FOUND "<<std::endl;

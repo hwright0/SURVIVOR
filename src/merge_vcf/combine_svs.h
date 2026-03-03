@@ -36,6 +36,10 @@ struct meta_data_str{
 	std::pair<int, int> num_reads;
 	std::string vcf_ID;
 	std::pair<std::string, std::string> allleles ; //first=REF; second=ALT
+	double sm;
+	int cn;
+	int bc;
+	std::pair<int,int> pe;
 };
 
 
@@ -50,6 +54,11 @@ public:
 		strand.second=false;
 		genotype="./.";
 		pre_supp_vec="";
+		sm=-1.0;
+		cn=-1;
+		bc=-1;
+		pe.first=-1;
+		pe.second=-1;
 	}
 	~Support_Node(){
 
@@ -67,6 +76,10 @@ public:
 	std::string pre_supp_vec;
 	std::pair<std::string,std::string> alleles;
 	std::string vcf_ID;
+	double sm;
+	int cn;
+	int bc;
+	std::pair<int,int> pe;
 };
 
 class SVS_Node {
